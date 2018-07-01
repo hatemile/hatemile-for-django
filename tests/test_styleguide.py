@@ -29,6 +29,7 @@ class TestStyleguide(unittest.TestCase):
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
     PATHS = (
+        os.path.join(BASE_DIR, 'hatemile_for_django'),
         os.path.join(BASE_DIR, 'tests'),
         os.path.join(BASE_DIR, 'setup.py')
     )
