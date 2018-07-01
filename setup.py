@@ -48,6 +48,7 @@ def get_packages():
 
     packages = find_packages(exclude=['tests'])
     packages.append('hatemile_for_django.static.hatemile_for_django.css')
+    packages.append('hatemile_for_django.static.hatemile_for_django.js')
 
     return packages
 
@@ -61,7 +62,8 @@ def get_package_data():
     """
 
     package_data = {
-        'hatemile_for_django.static.hatemile_for_django.css': ['*.css']
+        'hatemile_for_django.static.hatemile_for_django.css': ['*.css'],
+        'hatemile_for_django.static.hatemile_for_django.js': ['*.js']
     }
 
     return package_data

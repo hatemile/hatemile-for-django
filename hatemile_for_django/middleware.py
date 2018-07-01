@@ -238,6 +238,80 @@ def load_static_files_from_hatemile(html_parser, parameters):
             )
             local.append_element(style_hide_elements)
 
+        if (
+            (parameters[ENABLE_DRAG_AND_DROP_EVENTS])
+            or (parameters[ENABLE_CLICK_EVENTS])
+            or (parameters[ENABLE_HOVER_EVENTS])
+            or (parameters[MARK_INVALID_FIELDS])
+        ):
+            javascript_path = 'hatemile_for_django/js/'
+
+            common_functions_script = html_parser.create_element('script')
+            common_functions_script.set_attribute(
+                'id',
+                AccessibleEventImplementation.ID_SCRIPT_COMMON_FUNCTIONS
+            )
+            common_functions_script.set_attribute('type', 'text/javascript')
+            common_functions_script.set_attribute(
+                'src',
+                static(javascript_path + 'common.js')
+            )
+            local.prepend_element(common_functions_script)
+
+            script_event_listener = html_parser.create_element('script')
+            script_event_listener.set_attribute(
+                'id',
+                AccessibleEventImplementation.ID_SCRIPT_EVENT_LISTENER
+            )
+            script_event_listener.set_attribute('type', 'text/javascript')
+            script_event_listener.set_attribute(
+               'src',
+                static(javascript_path + 'eventlistener.js')
+            )
+            common_functions_script.insert_after(script_event_listener)
+
+            if (
+                (parameters[ENABLE_DRAG_AND_DROP_EVENTS])
+                or (parameters[ENABLE_CLICK_EVENTS])
+                or (parameters[ENABLE_HOVER_EVENTS])
+            ):
+                script_list = html_parser.create_element('script')
+                script_list.set_attribute(
+                    'id',
+                    AccessibleEventImplementation.ID_LIST_IDS_SCRIPT
+                )
+                script_list.set_attribute('type', 'text/javascript')
+                script_list.append_text('var activeElements = [];')
+                script_list.append_text('var hoverElements = [];')
+                script_list.append_text('var dragElements = [];')
+                script_list.append_text('var dropElements = [];')
+                body.append_element(script_list)
+
+                script_function = html_parser.create_element('script')
+                script_function.set_attribute(
+                    'id',
+                    AccessibleEventImplementation.ID_FUNCTION_SCRIPT_FIX
+                )
+                script_function.set_attribute('type', 'text/javascript')
+                script_function.set_attribute(
+                    'src',
+                    static(javascript_path + 'include.js')
+                )
+                body.append_element(script_function)
+
+            if parameters[MARK_INVALID_FIELDS]:
+                script_validate = html_parser.create_element('script')
+                script_validate.set_attribute(
+                    'id',
+                    AccessibleFormImplementation.ID_SCRIPT_EXECUTE_VALIDATION
+                )
+                script_validate.set_attribute('type', 'text/javascript')
+                script_validate.set_attribute(
+                    'src',
+                    static(javascript_path + 'validation.js')
+                )
+                body.append_element(script_validate)
+
 
 def execute_hatemile(html_parser, current_url, parameters):
     """
