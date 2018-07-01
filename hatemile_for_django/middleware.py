@@ -16,6 +16,7 @@ Module of AccessibleDjangoMiddleware class.
 
 from django.conf import settings
 from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.utils import translation
 from hatemile.implementation.assoc import AccessibleAssociationImplementation
 from hatemile.implementation.css import AccessibleCSSImplementation
 from hatemile.implementation.display import AccessibleDisplayImplementation
@@ -266,7 +267,7 @@ def load_static_files_from_hatemile(html_parser, parameters):
             script_event_listener.set_attribute('type', 'text/javascript')
             script_event_listener.set_attribute(
                'src',
-                static(javascript_path + 'eventlistener.js')
+               static(javascript_path + 'eventlistener.js')
             )
             common_functions_script.insert_after(script_event_listener)
 
@@ -313,12 +314,14 @@ def load_static_files_from_hatemile(html_parser, parameters):
                 body.append_element(script_validate)
 
 
-def execute_hatemile(html_parser, current_url, parameters):
+def execute_hatemile(html_parser, request_locale, current_url, parameters):
     """
     Execute the HaTeMiLe for Python for current HTML code.
 
     :param html_parser: The HTML parser.
     :type html_parser: hatemile.util.html.htmldomparser.HTMLDOMParser
+    :param request_locale: The locale of request.
+    :type request_locale: tuple(str, str)
     :param current_url: The current URL of request.
     :type current_url: str
     :param parameters: The parameter for execute accessible solutions of
@@ -328,7 +331,7 @@ def execute_hatemile(html_parser, current_url, parameters):
     :rtype: str
     """
 
-    configure = Configure()
+    configure = Configure(locale_configuration=request_locale)
 
     navigation = AccessibleNavigationImplementation(html_parser, configure)
     display = AccessibleDisplayImplementation(html_parser, configure)
@@ -456,6 +459,13 @@ class AccessibleDjangoMiddleware:
             html_parser = BeautifulSoupHTMLDOMParser(html_code)
             current_url = request.build_absolute_uri(request.get_full_path())
             parameters = get_complete_parameters()
+            request_language = translation.get_language_from_request(request)
+            if '-' in request_language:
+                code_language, code_contry = request_language.split('-')
+                full_code_language = code_language + '_' + code_contry.upper()
+                request_locale = (full_code_language, encoding)
+            else:
+                request_locale = (request_language, encoding)
 
             load_static_files_from_hatemile(
                 html_parser,
@@ -463,6 +473,7 @@ class AccessibleDjangoMiddleware:
             )
             new_html_code = execute_hatemile(
                 html_parser,
+                request_locale,
                 current_url,
                 parameters
             )
