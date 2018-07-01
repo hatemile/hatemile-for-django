@@ -15,6 +15,7 @@ Module of AccessibleDjangoMiddleware class.
 """
 
 from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from hatemile.implementation.assoc import AccessibleAssociationImplementation
 from hatemile.implementation.css import AccessibleCSSImplementation
 from hatemile.implementation.display import AccessibleDisplayImplementation
@@ -213,12 +214,37 @@ def get_complete_parameters():
     return parameters
 
 
-def execute_hatemile(html_code, current_url, parameters):
+def load_static_files_from_hatemile(html_parser, parameters):
+    """
+    Load the static files using URLs, to reduce the size of pages.
+
+    :param html_parser: The HTML parser.
+    :type html_parser: hatemile.util.html.htmldomparser.HTMLDOMParser
+    :param parameters: The parameter for execute accessible solutions of
+                       HaTeMiLe for Django.
+    :type parameters: dict(str, bool)
+    """
+
+    local = html_parser.find('head').first_result()
+    body = html_parser.find('body').first_result()
+    if (local is not None) and (body is not None):
+        if parameters[HIDE_HATEMILE_CHANGES]:
+            style_hide_elements = html_parser.create_element('link')
+            style_hide_elements.set_attribute('rel', 'stylesheet')
+            style_hide_elements.set_attribute('type', 'text/css')
+            style_hide_elements.set_attribute(
+                'href',
+                static('hatemile_for_django/css/hide_changes.css')
+            )
+            local.append_element(style_hide_elements)
+
+
+def execute_hatemile(html_parser, current_url, parameters):
     """
     Execute the HaTeMiLe for Python for current HTML code.
 
-    :param html_code: The current HTML code.
-    :type html_code: str
+    :param html_parser: The HTML parser.
+    :type html_parser: hatemile.util.html.htmldomparser.HTMLDOMParser
     :param current_url: The current URL of request.
     :type current_url: str
     :param parameters: The parameter for execute accessible solutions of
@@ -230,17 +256,15 @@ def execute_hatemile(html_code, current_url, parameters):
 
     configure = Configure()
 
-    parser = BeautifulSoupHTMLDOMParser(html_code)
-
-    navigation = AccessibleNavigationImplementation(parser, configure)
-    display = AccessibleDisplayImplementation(parser, configure)
+    navigation = AccessibleNavigationImplementation(html_parser, configure)
+    display = AccessibleDisplayImplementation(html_parser, configure)
 
     if (
         (parameters[ENABLE_DRAG_AND_DROP_EVENTS])
         or (parameters[ENABLE_CLICK_EVENTS])
         or (parameters[ENABLE_HOVER_EVENTS])
     ):
-        event = AccessibleEventImplementation(parser)
+        event = AccessibleEventImplementation(html_parser)
         if parameters[ENABLE_DRAG_AND_DROP_EVENTS]:
             event.make_accessible_all_drag_and_drop_events()
         if parameters[ENABLE_CLICK_EVENTS]:
@@ -254,7 +278,7 @@ def execute_hatemile(html_code, current_url, parameters):
         or (parameters[MARK_AUTOCOMPLETE_FIELDS])
         or (parameters[MARK_INVALID_FIELDS])
     ):
-        form = AccessibleFormImplementation(parser)
+        form = AccessibleFormImplementation(html_parser)
         if parameters[MARK_REQUIRED_FIELDS]:
             form.mark_all_required_fields()
         if parameters[MARK_RANGE_FIELDS]:
@@ -275,16 +299,16 @@ def execute_hatemile(html_code, current_url, parameters):
         (parameters[ASSOCIATE_TABLES])
         or (parameters[ASSOCIATE_LABELS])
     ):
-        association = AccessibleAssociationImplementation(parser)
+        association = AccessibleAssociationImplementation(html_parser)
         if parameters[ASSOCIATE_TABLES]:
             association.associate_all_data_cells_with_header_cells()
         if parameters[ASSOCIATE_LABELS]:
             association.associate_all_labels_with_fields()
 
     if parameters[SUPPORT_CSS_SPEAK]:
-        css_parser = TinyCSSParser(parser, current_url)
+        css_parser = TinyCSSParser(html_parser, current_url)
         css = AccessibleCSSImplementation(
-            parser,
+            html_parser,
             css_parser,
             configure
         )
@@ -313,7 +337,7 @@ def execute_hatemile(html_code, current_url, parameters):
     if parameters[DISPLAY_SHORTCUTS]:
         display.display_all_shortcuts()
 
-    return parser.get_html()
+    return html_parser.get_html()
 
 
 class AccessibleDjangoMiddleware:
@@ -355,11 +379,16 @@ class AccessibleDjangoMiddleware:
 
         if (not response.streaming) and (mime_type == 'text/html'):
             html_code = response.content.decode(encoding)
+            html_parser = BeautifulSoupHTMLDOMParser(html_code)
             current_url = request.build_absolute_uri(request.get_full_path())
             parameters = get_complete_parameters()
 
+            load_static_files_from_hatemile(
+                html_parser,
+                parameters
+            )
             new_html_code = execute_hatemile(
-                html_code,
+                html_parser,
                 current_url,
                 parameters
             )

@@ -38,6 +38,35 @@ def get_long_description():
         return readme_file.read()
 
 
+def get_packages():
+    """
+    Returns the packages used for HaTeMiLe for Django.
+
+    :return: The packages used for HaTeMiLe for Django.
+    :rtype: list(str)
+    """
+
+    packages = find_packages()
+    packages.append('hatemile_for_django.static.hatemile_for_django.css')
+
+    return packages
+
+
+def get_package_data():
+    """
+    Returns the packages with static files of HaTeMiLe for Django.
+
+    :return: The packages with static files of HaTeMiLe for Django.
+    :rtype: dict(str, list(str))
+    """
+
+    package_data = {
+        'hatemile_for_django.static.hatemile_for_django.css': ['*.css']
+    }
+
+    return package_data
+
+
 def get_requirements():
     """
     Returns the content of 'requirements.txt' in a list.
@@ -99,7 +128,8 @@ setup(
         'Programming Language :: Python :: 3',
         'Natural Language :: English'
     ],
-    packages=find_packages(),
+    packages=get_packages(),
+    package_data=get_package_data(),
     install_requires=get_requirements(),
     extras_require={
         'dev': get_requirements_dev()
