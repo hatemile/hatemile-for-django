@@ -46,7 +46,7 @@ def get_packages():
     :rtype: list(str)
     """
 
-    packages = find_packages()
+    packages = find_packages(exclude=['tests'])
     packages.append('hatemile_for_django.static.hatemile_for_django.css')
 
     return packages
