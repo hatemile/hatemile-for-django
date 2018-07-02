@@ -99,7 +99,7 @@ HATEMILE_PARAMETERS = {
 
 ## Contributing
 
-If you want contribute with HaTeMiLe for Django, read [contributing guidelines](CONTRIBUTING.md).
+If you want contribute with HaTeMiLe for Django, read [contributing guidelines](https://github.com/hatemile/hatemile-for-django/blob/master/CONTRIBUTING.md).
 
 ## See also
 * [HaTeMiLe for CSS](https://github.com/hatemile/hatemile-for-css)
