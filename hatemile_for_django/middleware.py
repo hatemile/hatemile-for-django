@@ -130,7 +130,7 @@ def get_complete_parameters():
     :rtype: dict(str, bool)
     """
 
-    parameters = getattr(settings, 'DEFAULT_PARAMETERS', DEFAULT_PARAMETERS)
+    parameters = getattr(settings, 'HATEMILE_PARAMETERS', DEFAULT_PARAMETERS)
     if parameters is not DEFAULT_PARAMETERS:
         if ASSOCIATE_TABLES not in parameters:
             parameters[ASSOCIATE_TABLES] = DEFAULT_PARAMETERS[ASSOCIATE_TABLES]
