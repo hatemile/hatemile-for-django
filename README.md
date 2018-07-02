@@ -43,6 +43,7 @@ MIDDLEWARE_CLASSES = (
     # ...
     'hatemile_for_django.middleware.AccessibleDjangoMiddleware',
 )
+```
 
 You can control which are solutions will be executed, add the dict `HATEMILE_PARAMETERS` in `settings.py`.
 
