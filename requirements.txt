@@ -1,1 +1,1 @@
-hatemile==2.0.0
+hatemile==2.0.1
